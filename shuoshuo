@@ -23,7 +23,7 @@ def login(QQ):
     if a == True:
         try:
             driver.switch_to.frame('login_frame')
-            driver.find_element_by_id('img_out_646420882').click()
+            driver.find_element_by_id('img_out_****').click()##快速登陆QQ号码
             print('快速登陆成功')
         except:
             print('快速登陆失败，正在使用账号密码登陆...')
