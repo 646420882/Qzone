@@ -1,0 +1,97 @@
+# coding=utf-8
+#!usr/bin/python3
+
+from selenium import webdriver
+import time
+
+#使用selenium
+#driver = webdriver.PhantomJS(executable_path="D:\\phantomjs.exe")  # PhantomJS
+driver = webdriver.Chrome(executable_path="D:\\chromedriver.exe")  # Chrome
+driver.maximize_window()  # 最大化
+QQ='***'  # QQ号码
+
+def login(QQ):
+    # 登录QQ空间
+    driver.get('http://user.qzone.qq.com/{}/311'.format(QQ))
+    time.sleep(5)
+    try:
+        driver.find_element_by_id('login_div')
+        a = True
+        print('需要登陆')
+    except:
+        a = False
+    if a == True:
+        try:
+            driver.switch_to.frame('login_frame')
+            driver.find_element_by_id('img_out_646420882').click()
+            print('快速登陆成功')
+        except:
+            print('快速登陆失败，正在使用账号密码登陆...')
+            driver.find_element_by_id('switcher_plogin').click()
+            driver.find_element_by_id('u').clear()  # 选择用户名框
+            driver.find_element_by_id('u').send_keys('****')  # QQ号码
+            driver.find_element_by_id('p').clear()
+            driver.find_element_by_id('p').send_keys('****')  # QQ密码
+            driver.find_element_by_id('login_button').click()
+            time.sleep(3)
+            try:
+                driver.find_element_by_id('login_div')
+                print('登陆失败')
+            except:
+                print('登陆成功')
+    driver.implicitly_wait(3)
+
+    try:
+        driver.find_element_by_id('QM_OwnerInfo_Icon')
+        b = True
+        print('未设置权限')
+    except:
+        b = False
+        print('设置了权限,程序已自动停止')
+        driver.close()
+        driver.quit()
+    return b
+def get_shuoshuo(QQ):
+    next_num = 0
+    while True:
+        driver.execute_script("window.scrollBy(0,10000)")
+        time.sleep(3)
+        driver.execute_script("window.scrollBy(0,20000)")
+        time.sleep(3)
+        driver.execute_script("window.scrollBy(0,30000)")
+        time.sleep(3)
+        driver.execute_script("window.scrollBy(0,40000)")
+        time.sleep(5)
+
+        driver.switch_to.frame('app_canvas_frame')  # 跳转到对应框架
+
+        content = driver.find_elements_by_css_selector('.content')
+        stime = driver.find_elements_by_css_selector('.c_tx.c_tx3.goDetail')
+        for con, sti in zip(content, stime):
+            data = {
+                'time': sti.text,
+                '内容': con.text,
+            }
+            print(data)
+            ##写入文件
+            with open('d:/数据/'+QQ+'.txt', 'a+',encoding='utf-8') as f:
+                f.write(sti.text+':' + con.text + '\n' )
+
+            ###
+        # 检查有无下一页
+        if driver.page_source.find('pager_next_' + str(next_num)) == -1:
+            print('爬取结束')
+            break
+            # 找到“下一页”的按钮
+        elem=driver.find_element_by_id('pager_next_' + str(next_num))
+        elem.click()
+        # 下一次的id
+        next_num += 1
+        driver.switch_to.parent_frame()
+    print("==========完成================")
+    #driver.close()
+    #driver.quit()
+
+if __name__ == '__main__':
+    login(QQ)  # QQ号码
+    get_shuoshuo(QQ)
